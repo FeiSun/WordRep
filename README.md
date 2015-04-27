@@ -1,5 +1,5 @@
 # Learning Word Representations by Jointly Modeling Syntagmatic and Paradigmatic Relations
---------------
+
 
 ## Introduction
 
@@ -7,9 +7,8 @@ This is a toolkit developed for learning the word representations.
 PDC and HDC are two unsupervised learning algorithms for word representations using both syntagmatic and paradigmatic relations via a joint training objective.
 
 ```
-Contact: Fei Sun, Microsoft Research Asia, ofey.sunfei@gmail.com, 
-Project page: http://sofey.me/projects/wordrep
-
+Contact: Fei Sun, Institute Of Computing Technology, ofey.sunfei@gmail.com, 
+Project page: http://ofey.me/projects/wordrep
 ```
 
 ## Usage
