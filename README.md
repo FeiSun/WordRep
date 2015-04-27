@@ -13,7 +13,7 @@ Project page: http://ofey.me/projects/wordrep
 
 ## Usage
 
-** Requirements **
+**Requirements**
 
 To complile the souce codes, some external packages are required
 
@@ -21,7 +21,7 @@ To complile the souce codes, some external packages are required
 * Eigen
 * OpenMP (for multithread)
 
-** Input **
+**Input**
 
 Each line of the input file represents a document in corpus.
 
@@ -30,7 +30,7 @@ Each line of the input file represents a document in corpus.
 ... The quick brown fox jumps over the lazy dog. ...
 ```
 
-** Run **
+**Run**
 
 ```shell
 ./w2v -train data.txt -word_output vec.txt -size 200 -window 5 -subsample 1e-4 -negative 5 -model pdc -binary 0 -iter 5
