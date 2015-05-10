@@ -108,7 +108,6 @@ void WordRep::build_vocab(vector<vector<string>>& docs)
 {
 	doc_num = docs.size();
 	unordered_map<string, int> word_cn;
-	auto sentences_end = docs.end();
 
 	for(auto& doc: docs)
 	{
