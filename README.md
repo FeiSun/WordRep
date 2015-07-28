@@ -54,11 +54,21 @@ Each line of the input file represents a document in corpus.
 ## Citation
 
 ```TeX
-@inproceedings{Fei:Learning,
-author = {Fei Sun and Jiafeng Guo and Yanyan Lan and Jun Xu and Xueqi Cheng},
-title = {Learning Word Representations by Jointly Modeling Syntagmatic and Paradigmatic Relations},
-booktitle = {Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics},
-year = {2015},
+@inproceedings{Sun:2011:DBC:2009916.2009952,
+author = {Sun, Fei and Song, Dandan and Liao, Lejian},
+title = {DOM based content extraction via text density},
+booktitle = {Proceedings of the 34th international ACM SIGIR conference on Research and development in Information Retrieval},
+series = {SIGIR '11},
+year = {2011},
+isbn = {978-1-4503-0757-4},
 location = {Beijing, China},
+pages = {245--254},
+numpages = {10},
+url = {http://doi.acm.org/10.1145/2009916.2009952},
+doi = {10.1145/2009916.2009952},
+acmid = {2009952},
+publisher = {ACM},
+address = {New York, NY, USA},
+keywords = {composite text density, content extraction, densitysum, text density},
 }
 ```
