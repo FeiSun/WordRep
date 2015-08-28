@@ -30,7 +30,7 @@ iter(iter),  window(window), min_count(min_count), table_size(table_size), word_
 	doc_num = 0;
 	total_words = 0;
 	ep = numeric_limits<float>::epsilon();
-} 
+}
 
 WordRep::~WordRep(void)
 {
@@ -74,7 +74,7 @@ void WordRep::make_table(vector<size_t>& table, vector<Word *>& vocab)
 	float scope = table_size * d1;
 	for(int i = 0; i < table_size; ++i)
 	{
-		table[i] = idx;
+		table[i] = vocab[idx]->index;
 		if(i > scope && idx < vocab_size - 1)
 		{
 			d1 += word_range[++idx] / train_words_pow;
@@ -83,7 +83,7 @@ void WordRep::make_table(vector<size_t>& table, vector<Word *>& vocab)
 		else if(idx == vocab_size - 1)
 		{
 			for(; i < table_size; ++i)
-				table[i] = idx;
+				table[i] = vocab[idx]->index;
 			break;
 		}
 	}
@@ -252,7 +252,7 @@ vector<vector<Word *>> WordRep::build_docs(string filename)
 	return std::move(docs);
 }
 
-void WordRep::negative_sampling(float alpha, Word * predict_word, RowVectorXf& project_rep, RowVectorXf& project_grad, 
+void WordRep::negative_sampling(float alpha, Word * predict_word, RowVectorXf& project_rep, RowVectorXf& project_grad,
 	                            RMatrixXf& target_matrix, RMatrixXf& target_matrix_his)
 {
 	unordered_map<size_t, uint8_t> targets;
@@ -276,7 +276,7 @@ void WordRep::negative_sampling(float alpha, Word * predict_word, RowVectorXf& p
 		target_matrix.row(it.first) += alpha * l2_grad.cwiseQuotient(temp);
 		#else
 		target_matrix.row(it.first) += alpha * l2_grad;
-		#endif 
+		#endif
 	}
 }
 
@@ -320,11 +320,13 @@ void WordRep::train_hdc(vector<vector<Word *>>& docs)
 				int reduced_window = distribution_window(generator);
 				int index_begin = max(0, j - window + reduced_window);
 				int index_end = min((int)doc_len, j + window + 1 - reduced_window);
-				
+
 				//paradigmatic
 				for(int m = index_begin; m < index_end; ++m)
 				{
 					if(m == j) continue;
+					if(doc[m]->sample_probability < uni_dis(generator))
+						continue;
 
 					neu1_grad.setZero();
 
@@ -337,7 +339,7 @@ void WordRep::train_hdc(vector<vector<Word *>>& docs)
 					W.row(current_word->index) += alpha * neu1_grad.cwiseQuotient(temp);
 					#else
 					W.row(current_word->index) += alpha * neu1_grad;
-					#endif 
+					#endif
 				}
 
 				//syntagmatic
@@ -351,7 +353,7 @@ void WordRep::train_hdc(vector<vector<Word *>>& docs)
 				D.row(doc_id) += alpha * neu1_grad.cwiseQuotient(temp);
 				#else
 				D.row(doc_id) += alpha * neu1_grad;
-				#endif 
+				#endif
 			}
 
             #pragma omp atomic
@@ -403,30 +405,32 @@ void WordRep::train_pdc(vector<vector<Word *>>& docs)
 				RowVectorXf neu1_grad = RowVectorXf::Zero(word_dim);
 
 				//paradigmatic
+				vector<size_t> c_idx;
 				for(int m = index_begin; m < index_end; ++m)
 				{
 					if(m == j) continue;
+					if(doc[m]->sample_probability < uni_dis(generator))
+						continue;
+
 					neu1 += C.row(doc[m]->index);
+					c_idx.push_back(doc[m]->index);
 				}
-				if(index_end - index_begin > 1)
-					neu1 /= index_end - index_begin - 1;
-
-				negative_sampling(alpha, current_word, neu1, neu1_grad, W, W_his);
-
-				if(index_end - index_begin > 1)
-					neu1_grad /= index_end - index_begin - 1;
-
-				for(int m = index_begin; m < index_end; ++m)
+				if(c_idx.size() > 0)
 				{
-					if(m == j) continue;
+					neu1 /= c_idx.size();
+					negative_sampling(alpha, current_word, neu1, neu1_grad, W, W_his);
+					neu1_grad /= c_idx.size();
 
-					#ifdef ADAGRAD
-					C_his.row(doc[m]->index) += neu1_grad.cwiseProduct(neu1_grad);
-					RowVectorXf temp = C_his.row(doc[m]->index).cwiseSqrt().array() + ep;
-					C.row(doc[m]->index) +=  alpha * neu1_grad.cwiseQuotient(temp);
-					#else
-					C.row(doc[m]->index) += alpha * neu1_grad;
-					#endif 
+					for(auto m: c_idx)
+					{
+						#ifdef ADAGRAD
+						C_his.row(m) += neu1_grad.cwiseProduct(neu1_grad);
+						RowVectorXf temp = C_his.row(m).cwiseSqrt().array() + ep;
+						C.row(m) +=  alpha * neu1_grad.cwiseQuotient(temp);
+						#else
+						C.row(m) += alpha * neu1_grad;
+						#endif
+					}
 				}
 
 				//syntagmatic
@@ -440,7 +444,7 @@ void WordRep::train_pdc(vector<vector<Word *>>& docs)
 				D.row(doc_id) += alpha * neu1_grad.cwiseQuotient(temp);
 				#else
 				D.row(doc_id) += alpha * neu1_grad;
-				#endif 
+				#endif
 			}
 
             #pragma omp atomic
@@ -477,7 +481,7 @@ void WordRep::save_word2vec(string filename, const RMatrixXf& data, bool binary)
 	{
 		std::ofstream out(filename, std::ios::binary);
 		char blank = ' ';
-		char enter = '\n'; 
+		char enter = '\n';
 		int size = sizeof(char);
 		int r_size = data.cols() * sizeof(RMatrixXf::Scalar);
 
